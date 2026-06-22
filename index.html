@@ -1569,13 +1569,13 @@
 .v5 #mric-ecart-sub { font-size: 14px; color: var(--fg-3); line-height: 1.55; max-width: 460px; margin: 12px auto 0; }
 
 /* Versus panels */
-.v5 .mric-versus { display: grid; grid-template-columns: 1fr; gap: 0; margin: 8px 0 4px; padding-top: 28px; border-top: 1px solid var(--border-soft); }
+.v5 .mric-versus { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0; padding-top: 22px; border-top: 1px solid var(--border-soft); text-align: center; }
 @container (min-width: 640px) { .v5 .mric-versus { grid-template-columns: 1fr 1fr; } }
-.v5 .mric-vs-panel { padding: 18px 0; position: relative; border-bottom: 1px solid var(--border-soft); }
+.v5 .mric-vs-panel { padding: 18px 0; position: relative; border-bottom: 1px solid var(--border-soft); text-align: center; }
 @container (min-width: 640px) {
   .v5 .mric-vs-panel { border-bottom: none; }
-  .v5 .mric-vs-panel.mric-vs-loss { border-right: 1px solid var(--border-soft); padding-right: 28px; }
-  .v5 .mric-vs-panel.mric-vs-gain { padding-left: 28px; }
+  .v5 .mric-vs-panel.mric-vs-loss { border-right: 1px solid var(--border-soft); padding: 8px 20px; }
+  .v5 .mric-vs-panel.mric-vs-gain { padding: 8px 20px; }
 }
 .v5 .mric-versus-sep { display: none; }
 .v5 .mric-vs-tag { font-size: 10px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 16px; }
@@ -1583,10 +1583,10 @@
 .v5 .mric-vs-gain .mric-vs-tag { color: var(--accent); }
 .v5 .mric-vs-stat { margin-bottom: 16px; }
 .v5 .mric-vs-stat:last-child { margin-bottom: 0; }
-.v5 .mric-vs-num { font-size: 24px; font-weight: 800; color: var(--fg); letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.v5 .mric-vs-num { font-size: clamp(28px, 3.4vw, 34px); font-weight: 800; color: var(--fg); letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .v5 .mric-vs-loss .mric-vs-num { color: var(--orange); }
 .v5 .mric-vs-gain .mric-vs-num { color: var(--accent); }
-.v5 .mric-vs-lbl { font-size: 11px; color: var(--fg-4); margin-top: 5px; font-weight: 600; }
+.v5 .mric-vs-lbl { font-size: 12px; color: var(--fg-4); margin-top: 7px; font-weight: 600; }
 
 /* bar heading + couleur "sans invest" */
 .v5 .mric-bar-heading { font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: var(--fg-4); margin-bottom: 12px; }
@@ -1627,7 +1627,6 @@
                 <div class="mric-headline-num" id="mric-ecart">—</div>
                 <div class="mric-headline-sub" id="mric-ecart-sub"></div>
               </div>
-            </div>
 
         <div class="mric-versus mric-anim mric-anim-d1">
           <div class="mric-vs-panel mric-vs-loss">
@@ -1654,6 +1653,7 @@
             </div>
           </div>
         </div>
+            </div>
 
             <!-- Bar -->
             <div class="mric-bar-section mric-anim">
