@@ -2053,105 +2053,102 @@
     var ctx=chartCanvas.getContext('2d');
     var dpr=window.devicePixelRatio||1;
     var rect=chartCanvas.getBoundingClientRect();
-    var h=220;
-    chartCanvas.width=rect.width*dpr;
-    chartCanvas.height=h*dpr;
-    ctx.scale(dpr,dpr);
+    var h=240;
+    chartCanvas.width=Math.max(1,Math.round(rect.width*dpr));
+    chartCanvas.height=Math.round(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
     var w=rect.width;
-    var pT=20,pB=28,pL=54,pR=14;
+    var pT=26,pB=30,pL=50,pR=96;
     var pW=w-pL-pR,pH=h-pT-pB;
     ctx.clearRect(0,0,w,h);
     if(!data.length)return;
 
-    var max=0;
-    for(var m=0;m<data.length;m++){
-      if(data[m].capitalInvesti>max)max=data[m].capitalInvesti;
-      if(data[m].montantInitial>max)max=data[m].montantInitial;
-    }
-    max=max*1.05;
-    var sX=pW/(data.length-1||1);
+    var FONT="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif";
+    var TEAL="#00F5C0",LOSS="#FF5C7A";
+    var K0=data[0].montantInitial;
 
-    ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
+    // Reconstruit les séries en valeur réelle, départ commun (an 0 = K0)
+    var rows=[{a:0,inv:K0,infl:K0}];
+    for(var k=0;k<data.length;k++){rows.push({a:data[k].annee,inv:data[k].valeurReelleInv,infl:data[k].valeurReelleInfl});}
+    var n=rows.length;
+
+    var max=0;for(var m=0;m<n;m++){if(rows[m].inv>max)max=rows[m].inv;}
+    max=(max*1.15)||1;
+
+    function X(i){return pL+(i/(n-1||1))*pW;}
+    function Y(v){return pT+pH-(v/max)*pH;}
+
+    // ---- Grille + axe Y ----
+    ctx.lineWidth=1;ctx.font="600 11px "+FONT;ctx.textBaseline="middle";
     for(var g=0;g<=4;g++){
       var gy=pT+(pH/4)*g;
-      ctx.beginPath();ctx.moveTo(pL,gy);ctx.lineTo(w-pR,gy);ctx.stroke();
-      ctx.fillStyle='#fff';ctx.textAlign='right';ctx.textBaseline='middle';
-      ctx.font='11px sans-serif';
-      ctx.fillText(formatCompact(max-(max/4)*g),pL-8,gy);
+      ctx.strokeStyle="rgba(255,255,255,0.06)";
+      ctx.beginPath();ctx.moveTo(pL,gy);ctx.lineTo(pL+pW,gy);ctx.stroke();
+      ctx.fillStyle="rgba(197,213,232,0.55)";ctx.textAlign="right";
+      ctx.fillText(formatCompact(max-(max/4)*g),pL-10,gy);
     }
 
-    var initY=pT+pH-(data[0].montantInitial/max)*pH;
-    ctx.setLineDash([4,4]);
-    ctx.strokeStyle='rgba(197,213,232,0.25)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(pL,initY);ctx.lineTo(w-pR,initY);ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.beginPath();ctx.moveTo(pL,initY);
-    for(var r=0;r<data.length;r++){
-      ctx.lineTo(pL+r*sX,pT+pH-(data[r].valeurReelleInfl/max)*pH);
-    }
-    ctx.lineTo(pL+(data.length-1)*sX,initY);ctx.closePath();
-    ctx.fillStyle='rgba(255,59,78,0.08)';ctx.fill();
-
-    var grad=ctx.createLinearGradient(0,pT,0,pT+pH);
-    grad.addColorStop(0,'rgba(0,245,192,0.15)');grad.addColorStop(1,'rgba(0,245,192,0.01)');
-    ctx.beginPath();ctx.moveTo(pL,initY);
-    for(var t=0;t<data.length;t++){
-      ctx.lineTo(pL+t*sX,pT+pH-(data[t].capitalInvesti/max)*pH);
-    }
-    ctx.lineTo(pL+(data.length-1)*sX,initY);ctx.closePath();
-    ctx.fillStyle=grad;ctx.fill();
-
-    ctx.beginPath();
-    for(var a=0;a<data.length;a++){
-      var ax=pL+a*sX,ay=pT+pH-(data[a].valeurReelleInfl/max)*pH;
-      a===0?ctx.moveTo(ax,ay):ctx.lineTo(ax,ay);
-    }
-    ctx.strokeStyle='#FF3B4E';ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
-
-    ctx.beginPath();
-    for(var b=0;b<data.length;b++){
-      var bx=pL+b*sX,by=pT+pH-(data[b].valeurReelleInv/max)*pH;
-      b===0?ctx.moveTo(bx,by):ctx.lineTo(bx,by);
-    }
-    ctx.strokeStyle='#00F5C0';ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
-
-    ctx.setLineDash([5,3]);
-    ctx.beginPath();
-    for(var c=0;c<data.length;c++){
-      var cx=pL+c*sX,cy=pT+pH-(data[c].capitalInvesti/max)*pH;
-      c===0?ctx.moveTo(cx,cy):ctx.lineTo(cx,cy);
-    }
-    ctx.strokeStyle='rgba(16,96,196,0.5)';ctx.lineWidth=1.5;ctx.stroke();
-    ctx.setLineDash([]);
-
-    var di=Math.max(1,Math.floor(data.length/8));
-    for(var d=0;d<data.length;d++){
-      if(d%di!==0&&d!==data.length-1)continue;
-      var rdx=pL+d*sX,rdy=pT+pH-(data[d].valeurReelleInfl/max)*pH;
-      ctx.beginPath();ctx.arc(rdx,rdy,3,0,Math.PI*2);
-      ctx.fillStyle='#FF3B4E';ctx.fill();
-      var gdx=pL+d*sX,gdy=pT+pH-(data[d].valeurReelleInv/max)*pH;
-      ctx.beginPath();ctx.arc(gdx,gdy,3,0,Math.PI*2);
-      ctx.fillStyle='#00F5C0';ctx.fill();
+    // ---- Points + lissage ----
+    var teal=[],loss=[];
+    for(var p=0;p<n;p++){teal.push({x:X(p),y:Y(rows[p].inv)});loss.push({x:X(p),y:Y(rows[p].infl)});}
+    function trace(pts){
+      ctx.moveTo(pts[0].x,pts[0].y);
+      for(var i=1;i<pts.length;i++){
+        var xc=(pts[i-1].x+pts[i].x)/2,yc=(pts[i-1].y+pts[i].y)/2;
+        ctx.quadraticCurveTo(pts[i-1].x,pts[i-1].y,xc,yc);
+      }
+      ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
     }
 
-    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='top';
-    ctx.font='10px sans-serif';
-    var xi=Math.max(1,Math.floor(data.length/6));
-    for(var x=0;x<data.length;x++){
-      if(x%xi!==0&&x!==data.length-1)continue;
-      ctx.fillText('An '+data[x].annee,pL+x*sX,h-pB+8);
+    // ---- Wedge entre les deux courbes (l'écart qui se creuse) ----
+    ctx.beginPath();trace(teal);
+    for(var r=loss.length-1;r>=0;r--){ctx.lineTo(loss[r].x,loss[r].y);}
+    ctx.closePath();
+    var gap=ctx.createLinearGradient(pL,0,pL+pW,0);
+    gap.addColorStop(0,"rgba(0,245,192,0.03)");gap.addColorStop(1,"rgba(0,245,192,0.20)");
+    ctx.fillStyle=gap;ctx.fill();
+
+    // ---- Courbe "sans rien faire" (perte) ----
+    ctx.beginPath();trace(loss);
+    ctx.strokeStyle=LOSS;ctx.lineWidth=2.5;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();
+
+    // ---- Courbe "en investissant" (gain) avec glow ----
+    ctx.save();
+    ctx.shadowColor="rgba(0,245,192,0.5)";ctx.shadowBlur=14;
+    ctx.beginPath();trace(teal);
+    ctx.strokeStyle=TEAL;ctx.lineWidth=3;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();
+    ctx.restore();
+
+    // ---- Point de départ commun ----
+    ctx.fillStyle="rgba(197,213,232,0.9)";ctx.beginPath();ctx.arc(X(0),Y(K0),3.5,0,7);ctx.fill();
+
+    // ---- Extrémités : halo + point + valeur ----
+    var te=teal[n-1],le=loss[n-1];
+    ctx.fillStyle="rgba(0,245,192,0.18)";ctx.beginPath();ctx.arc(te.x,te.y,9,0,7);ctx.fill();
+    ctx.fillStyle=TEAL;ctx.beginPath();ctx.arc(te.x,te.y,4.5,0,7);ctx.fill();
+    ctx.fillStyle="rgba(255,92,122,0.18)";ctx.beginPath();ctx.arc(le.x,le.y,9,0,7);ctx.fill();
+    ctx.fillStyle=LOSS;ctx.beginPath();ctx.arc(le.x,le.y,4.5,0,7);ctx.fill();
+
+    ctx.font="800 13px "+FONT;ctx.textAlign="left";ctx.textBaseline="middle";
+    ctx.fillStyle=TEAL;ctx.fillText(formatCompact(rows[n-1].inv),te.x+12,te.y);
+    ctx.fillStyle=LOSS;ctx.fillText(formatCompact(rows[n-1].infl),le.x+12,le.y);
+
+    // ---- Axe X ----
+    ctx.fillStyle="rgba(197,213,232,0.55)";ctx.textAlign="center";ctx.textBaseline="top";
+    ctx.font="600 10px "+FONT;
+    var xi=Math.max(1,Math.round((n-1)/6));
+    for(var x=0;x<n;x++){
+      if(x%xi!==0&&x!==n-1)continue;
+      ctx.fillText(rows[x].a===0?"Départ":"An "+rows[x].a,X(x),pT+pH+10);
     }
 
-    ctx.font='10px sans-serif';
-    var legY=pT+6;
-    ctx.fillStyle='#FF3B4E';ctx.fillRect(pL+8,legY,10,3);
-    ctx.fillStyle='#fff';ctx.textAlign='left';
-    ctx.fillText('Sans investissement',pL+22,legY+5);
-    ctx.fillStyle='#00F5C0';ctx.fillRect(pL+8,legY+14,10,3);
-    ctx.fillStyle='#fff';
-    ctx.fillText('Investi (réel)',pL+22,legY+19);
+    // ---- Legende (haut gauche) ----
+    var lx=pL+2,ly=pT+1;
+    ctx.textAlign="left";ctx.textBaseline="middle";ctx.font="700 11px "+FONT;
+    ctx.fillStyle=TEAL;ctx.beginPath();ctx.arc(lx+4,ly+5,4,0,7);ctx.fill();
+    ctx.fillStyle="rgba(230,240,255,0.9)";ctx.fillText("En investissant",lx+14,ly+6);
+    ctx.fillStyle=LOSS;ctx.beginPath();ctx.arc(lx+4,ly+21,4,0,7);ctx.fill();
+    ctx.fillStyle="rgba(230,240,255,0.9)";ctx.fillText("Sans rien faire",lx+14,ly+22);
   }
 
   function calculer(){
